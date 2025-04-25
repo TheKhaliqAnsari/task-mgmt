@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard | Employee Management System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --topbar-height: 60px;
+            --primary-color: #4e73df;
+            --secondary-color: #f8f9fc;
+            --text-color: #5a5c69;
+            --success-color: #1cc88a;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --info-color: #36b9cc;
+        }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8f9fc;
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, #4e73df 0%, #3a66d8 100%);
+            color: white;
+            z-index: 100;
+            transition: all 0.3s;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+        
+        .sidebar-brand {
+            height: var(--topbar-height);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 800;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            margin: 0 1rem;
+        }
+        
+        .nav-item {
+            position: relative;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid white;
+        }
+        
+        .nav-link i {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+        
+        /* Topbar Styles */
+        .topbar {
+            height: var(--topbar-height);
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            z-index: 99;
+            background-color: white;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            transition: all 0.3s;
+        }
+        
+        .topbar-divider {
+            width: 0;
+            border-right: 1px solid #e3e6f0;
+            height: calc(var(--topbar-height) - 2rem);
+            margin: auto 1rem;
+        }
+        
+        .content {
+            margin-left: var(--sidebar-width);
+            padding-top: calc(var(--topbar-height) + 1.5rem);
+            padding-right: 1.5rem;
+            padding-left: 1.5rem;
+            padding-bottom: 1.5rem;
+            min-height: 100vh;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: #f8f9fc;
+            border-bottom: 1px solid #e3e6f0;
+        }
+        
+        .dropdown-menu {
+            font-size: 0.85rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+        
+        .dropdown-item:active {
+            background-color: var(--primary-color);
+        }
+        
+        .logout-btn {
+            color: var(--primary-color);
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .logout-btn:hover {
+            color: #224abe;
+        }
+        
+        /* Dashboard Cards */
+        .dashboard-card {
+            border-left: 4px solid;
+        }
+        
+        .dashboard-card.primary {
+            border-left-color: var(--primary-color);
+        }
+        
+        .dashboard-card.success {
+            border-left-color: var(--success-color);
+        }
+        
+        .dashboard-card.info {
+            border-left-color: var(--info-color);
+        }
+        
+        .dashboard-card.warning {
+            border-left-color: var(--warning-color);
+        }
+        
+        .dashboard-card .card-icon {
+            font-size: 2rem;
+            opacity: 0.3;
+        }
+        
+        /* Task List */
+        .task-item {
+            border-left: 4px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .task-item:hover {
+            background-color: rgba(78, 115, 223, 0.05);
+        }
+        
+        .task-item.high-priority {
+            border-left-color: var(--danger-color);
+        }
+        
+        .task-item.medium-priority {
+            border-left-color: var(--warning-color);
+        }
+        
+        .task-item.low-priority {
+            border-left-color: var(--info-color);
+        }
+        
+        .task-item.completed {
+            border-left-color: var(--success-color);
+        }
+        
+        .task-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .status-not-started {
+            background-color: var(--danger-color);
+        }
+        
+        .status-in-progress {
+            background-color: var(--warning-color);
+        }
+        
+        .status-in-review {
+            background-color: var(--info-color);
+        }
+        
+        .status-completed {
+            background-color: var(--success-color);
+        }
+        
+        /* Quick Links */
+        .quick-link-card {
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .quick-link-card .icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .topbar, .content {
+                left: 0;
+                margin-left: 0;
+            }
+            
+            .sidebar-toggler {
+                display: block !important;
+            }
+        }
+        
+        /* Progress Bar */
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+        }
+        
+        /* Calendar */
+        .calendar-day {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 2px;
+            font-weight: bold;
+        }
+        
+        .calendar-day.today {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .calendar-day.event {
+            border: 2px solid var(--primary-color);
+        }
+    </style>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-person-badge me-2"></i>
+            <span>Employee Panel</span>
+        </div>
+        <hr class="sidebar-divider my-0">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" th:href="@{/employee/dashboard}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <hr class="sidebar-divider">
+            <div class="sidebar-heading ps-3 py-2 text-uppercase opacity-75 small">
+                Employee Services
+            </div>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/employee/self-service}">
+                    <i class="bi bi-person-lines-fill"></i>
+                    <span>Self Service Portal</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" th:href="@{/employee/tasks}">
+                    <i class="bi bi-list-task"></i>
+                    <span>My Tasks</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" th:href="@{/employee/payroll}">
+                    <i class="bi bi-cash-stack"></i>
+                    <span>Payroll</span>
+                </a>
+            </li>
+            <hr class="sidebar-divider">
+            <div class="sidebar-heading ps-3 py-2 text-uppercase opacity-75 small">
+                Personal
+            </div>
+            <li class="nav-item">
+                <a class="nav-link" href="#" th:href="@{/employee/attendance}">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" th:href="@{/employee/leave}">
+                    <i class="bi bi-calendar-x"></i>
+                    <span>Leave Requests</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" th:href="@{/employee/profile}">
+                    <i class="bi bi-person-circle"></i>
+                    <span>My Profile</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <nav class="navbar navbar-expand h-100">
+            <div class="container-fluid">
+                <button class="btn sidebar-toggler d-md-none" type="button">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="d-none d-md-inline">
+                    <h5 class="mb-0 text-gray-800" th:text="${pageTitle}">My Dashboard</h5>
+                </div>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bell-fill"></i>
+                            <span class="position-absolute top-25 start-75 translate-middle badge rounded-pill bg-danger">
+                                3
+                            </span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="alertsDropdown">
+                            <h6 class="dropdown-header">Notifications</h6>
+                            <a class="dropdown-item d-flex align-items-center" href="#">
+                                <div class="me-3">
+                                    <div class="icon-circle bg-primary text-white p-2">
+                                        <i class="bi bi-info-circle"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="small text-gray-500">April 12, 2023</div>
+                                    <span>New task assigned: Website Redesign</span>
+                                </div>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center" href="#">
+                                <div class="me-3">
+                                    <div class="icon-circle bg-success text-white p-2">
+                                        <i class="bi bi-check-circle"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="small text-gray-500">April 10, 2023</div>
+                                    <span>Your leave request has been approved</span>
+                                </div>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center" href="#">
+                                <div class="me-3">
+                                    <div class="icon-circle bg-warning text-white p-2">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="small text-gray-500">April 8, 2023</div>
+                                    <span>Reminder: Complete your timesheet</span>
+                                </div>
+                            </a>
+                            <a class="dropdown-item text-center small text-gray-500" href="#">Show All Notifications</a>
+                        </div>
+                    </li>
+                    <div class="topbar-divider"></div>
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="d-none d-lg-inline text-gray-600 small me-2" th:text="${employeeName}">John Doe</span>
+                            <img class="rounded-circle" src="https://via.placeholder.com/40" width="40" height="40" alt="Employee Profile">
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="#" th:href="@{/employee/profile}">
+                                <i class="bi bi-person-fill me-2 text-gray-400"></i>
+                                Profile
+                            </a>
+                            <a class="dropdown-item" href="#" th:href="@{/employee/settings}">
+                                <i class="bi bi-gear-fill me-2 text-gray-400"></i>
+                                Settings
+                            </a>
+                            <a class="dropdown-item" href="#" th:href="@{/employee/activity}">
+                                <i class="bi bi-list-ul me-2 text-gray-400"></i>
+                                Activity Log
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" th:href="@{/logout}" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                                <i class="bi bi-box-arrow-right me-2 text-gray-400"></i>
+                                Logout
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Welcome Banner -->
+        <div class="card mb-4 py-3 border-left-primary">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4 class="mb-1">Welcome back, <span th:text="${employeeName}">John Doe</span>!</h4>
+                        <p class="mb-0 text-muted" th:text="${currentDate}">Wednesday, April 12, 2023</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <button class="btn btn-primary">
+                            <i class="bi bi-clock me-1"></i> Clock In
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row">
+            <!-- Tasks Card -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card dashboard-card primary h-100">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    My Tasks
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${totalTasks}">8</div>
+                                <div class="mt-2 small">
+                                    <span class="text-success me-2">5 Completed</span>
+                                    <span class="text-danger">3 Pending</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-list-task card-icon text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Card -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card dashboard-card success h-100">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Attendance
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${attendancePercentage}">98%</div>
+                                <div class="mt-2 small">
+                                    <span class="text-muted">This month</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-calendar-check card-icon text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leave Balance Card -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card dashboard-card info h-100">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                    Leave Balance
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${leaveBalance}">12 days</div>
+                                <div class="mt-2 small">
+                                    <span class="text-muted">Annual leave remaining</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-calendar-x card-icon text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payroll Card -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card dashboard-card warning h-100">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Next Payroll
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${nextPayrollDate}">Apr 30, 2023</div>
+                                <div class="mt-2 small">
+                                    <span class="text-muted">18 days remaining</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-cash-stack card-icon text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Row -->
+        <div class="row">
+            <!-- My Tasks -->
+            <div class="col-lg-8">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">My Tasks</h6>
+                        <a href="#" th:href="@{/employee/tasks}" class="btn btn-sm btn-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            <div class="list-group-item task-item high-priority" th:each="task : ${tasks}">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Website Redesign</h6>
+                                        <p class="mb-1 small text-muted">Create new homepage mockups for client review</p>
+                                        <div class="d-flex align-items-center mt-2">
+                                            <span class="task-status status-in-progress"></span>
+                                            <small class="text-warning">In Progress</small>
+                                            <small class="text-muted ms-3"><i class="bi bi-calendar me-1"></i> Due: Apr 15, 2023</small>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-danger">High Priority</span>
+                                        <div class="progress mt-2" style="width: 100px;">
+                                            <div class="progress-bar bg-warning" role="progressbar" style="width: 60%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">60%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="list-group-item task-item medium-priority">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">API Documentation</h6>
+                                        <p class="mb-1 small text-muted">Update API documentation with new endpoints</p>
+                                        <div class="d-flex align-items-center mt-2">
+                                            <span class="task-status status-not-started"></span>
+                                            <small class="text-danger">Not Started</small>
+                                            <small class="text-muted ms-3"><i class="bi bi-calendar me-1"></i> Due: Apr 20, 2023</small>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-warning">Medium Priority</span>
+                                        <div class="progress mt-2" style="width: 100px;">
+                                            <div class="progress-bar bg-danger" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="list-group-item task-item completed">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Client Meeting Notes</h6>
+                                        <p class="mb-1 small text-muted">Prepare meeting notes from client call</p>
+                                        <div class="d-flex align-items-center mt-2">
+                                            <span class="task-status status-completed"></span>
+                                            <small class="text-success">Completed</small>
+                                            <small class="text-muted ms-3"><i class="bi bi-calendar me-1"></i> Due: Apr 10, 2023</small>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-success">Completed</span>
+                                        <div class="progress mt-2" style="width: 100px;">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">100%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="list-group-item task-item low-priority">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Team Training</h6>
+                                        <p class="mb-1 small text-muted">Prepare materials for new team member onboarding</p>
+                                        <div class="d-flex align-items-center mt-2">
+                                            <span class="task-status status-in-review"></span>
+                                            <small class="text-info">In Review</small>
+                                            <small class="text-muted ms-3"><i class="bi bi-calendar me-1"></i> Due: Apr 25, 2023</small>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-info">Low Priority</span>
+                                        <div class="progress mt-2" style="width: 100px;">
+                                            <div class="progress-bar bg-info" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100">80%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Payroll Summary -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Payroll Summary</h6>
+                        <a href="#" th:href="@{/employee/payroll}" class="btn btn-sm btn-primary">Details</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Last Payment:</span>
+                                <span class="font-weight-bold" th:text="${lastPayment}">$3,450.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Payment Date:</span>
+                                <span th:text="${lastPaymentDate}">Mar 31, 2023</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Next Payment:</span>
+                                <span th:text="${nextPayment}">Apr 30, 2023</span>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="text-center">
+                            <a href="#" th:href="@{/employee/payroll/slips}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-file-earmark-text me-1"></i> View Pay Slips
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Upcoming Events</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap justify-content-between mb-3">
+                            <div class="calendar-day">10</div>
+                            <div class="calendar-day">11</div>
+                            <div class="calendar-day today">12</div>
+                            <div class="calendar-day event">13</div>
+                            <div class="calendar-day">14</div>
+                            <div class="calendar-day">15</div>
+                            <div class="calendar-day">16</div>
+                        </div>
+                        <div class="list-group">
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">Team Meeting</h6>
+                                    <small>Today</small>
+                                </div>
+                                <p class="mb-1 small">Weekly team sync-up at 2:00 PM</p>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">Project Deadline</h6>
+                                    <small>Apr 13</small>
+                                </div>
+                                <p class="mb-1 small">Website redesign project due</p>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">Training Session</h6>
+                                    <small>Apr 15</small>
+                                </div>
+                                <p class="mb-1 small">New software training at 10:00 AM</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Self Service Quick Links -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Self Service Portal</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card quick-link-card h-100">
+                                    <div class="card-body">
+                                        <div class="icon">
+                                            <i class="bi bi-calendar-plus"></i>
+                                        </div>
+                                        <h5>Request Leave</h5>
+                                        <p class="small text-muted">Apply for time off</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card quick-link-card h-100">
+                                    <div class="card-body">
+                                        <div class="icon">
+                                            <i class="bi bi-file-earmark-text"></i>
+                                        </div>
+                                        <h5>Pay Slips</h5>
+                                        <p class="small text-muted">View and download pay slips</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card quick-link-card h-100">
+                                    <div class="card-body">
+                                        <div class="icon">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </div>
+                                        <h5>Update Info</h5>
+                                        <p class="small text-muted">Update personal information</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card quick-link-card h-100">
+                                    <div class="card-body">
+                                        <div class="icon">
+                                            <i class="bi bi-question-circle"></i>
+                                        </div>
+                                        <h5>Help Desk</h5>
+                                        <p class="small text-muted">Submit support requests</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">Ready to Leave?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Select "Logout" below if you are ready to end your current session.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <a class="btn btn-primary" href="#" th:href="@{/logout}">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    
+</body>
+</html>

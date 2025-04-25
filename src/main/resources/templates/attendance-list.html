@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Attendance List</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Employee Attendance</h2>
+
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+        <tr>
+            <th>Employee ID</th>
+            <th>Employee Name</th>
+            <th>Login Date</th>
+            <th>Login Time</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="record : ${attendanceList}">
+            <td th:text="${record.employeeId}"></td>
+            <td th:text="${record.employee.name}"></td>
+            <td th:text="${#temporals.format(record.loginTime, 'yyyy-MM-dd')}"></td>
+            <td th:text="${#temporals.format(record.loginTime, 'HH:mm:ss')}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

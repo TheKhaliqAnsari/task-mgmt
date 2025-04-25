@@ -1,0 +1,8 @@
+<form th:action="@{/assignTask}" method="post">
+    <input type="hidden" name="taskId" th:value="${task.id}" />
+    
+    <label for="employeeId">Enter Employee ID:</label>
+    <input type="number" name="employeeId" class="form-control" required />
+
+    <button type="submit" class="btn btn-primary mt-3">Assign</button>
+</form>
